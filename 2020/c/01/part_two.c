@@ -5,7 +5,6 @@ int fuel_required_for_mass(int mass)
 	return mass / 3 - 2;
 }
 
-#define MAX_LINES 32767
 #define MIDPOINT 1010
 #define TARGET 2020
 
