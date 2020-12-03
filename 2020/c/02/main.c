@@ -16,8 +16,7 @@ char* load_input(FILE *fp) {
 	return buffer;
 }
 
-
-int number_from_chars(char* chars, int offset) {
+char* digits_from_chars(char* chars, int offset) {
 	char cur = chars[offset];
 	int consecutive_numbers = 0;
 	while (cur >= '0' && cur <= '9') {
@@ -27,7 +26,7 @@ int number_from_chars(char* chars, int offset) {
 
 	char *digits = malloc(consecutive_numbers);
 	strncpy(digits, chars + offset, consecutive_numbers);
-	return atoi(digits);
+	return digits;
 }
 
 int main()
@@ -50,13 +49,20 @@ int main()
 	int min = 0, max = 0, matching_char_count = 0, valid_count = 0;
 	char rule_char = '\0';
 
-	for (int i = 0; cur != '\0'; i++) {
-		cur = input[i];
+	int offset = 0;
+	while (cur != '\0') {
+		cur = input[offset];
 		if (cur >= '0' && cur <= '9') {
 			if (min == 0) {
-				min = number_from_chars(input, i);
+				char *min_digits = digits_from_chars(input, offset);
+				min = atoi(min_digits);
+				offset += strlen(min_digits);
+				continue;
 			} else if (max == 0) {
-				max = number_from_chars(input, i);
+				char *max_digits = digits_from_chars(input, offset);
+				max = atoi(max_digits);
+				offset += strlen(max_digits);
+				continue;
 			}
 		} else if (cur >= 'a' && cur <= 'z') {
 			if (rule_char == '\0') {
@@ -73,7 +79,8 @@ int main()
 			min = 0;
 			max = 0;
 		}
+		offset++;
 	}
-	printf("we got %d valid passwords", valid_count);
+	printf("we got %d valid passwords\n", valid_count);
 	return 0;
 }
