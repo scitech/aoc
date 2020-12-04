@@ -1,8 +1,5 @@
 #include <stdio.h>
-// i need stdlib to make this compiler warning go away?:
-// implicitly declaring library function 'malloc' with type 'void *(unsigned long)'
 #include <stdlib.h>
-#include <string.h>
 
 #define PATTERN_LENGTH 31
 #define TREE '#'
