@@ -36,14 +36,14 @@ int go_downhill(char *input, int mov_x, int mov_y) {
 	char cur = input[cursor];
 	while (cur != '\0') {
 		if (cur == TREE || cur == NOT_TREE) {
-				// consume buffer
-				char row[PATTERN_LENGTH];
-				read_pattern_row(row, input, cursor);
-				// check fer trees
-				total_trees += is_tree_here(row, toboggan_pos_x);
-				// move toboggan
-				toboggan_pos_x = toboggan_pos_x + mov_x;
-				cursor += ((PATTERN_LENGTH * mov_y) + (mov_y));
+			// consume buffer
+			char row[PATTERN_LENGTH];
+			read_pattern_row(row, input, cursor);
+			// check fer trees
+			total_trees += is_tree_here(row, toboggan_pos_x);
+			// move toboggan
+			toboggan_pos_x = toboggan_pos_x + mov_x;
+			cursor += ((PATTERN_LENGTH * mov_y) + (mov_y));
 		} else {
 			// should really never get here
 			cursor++;
