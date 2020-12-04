@@ -54,15 +54,24 @@ int go_downhill(char *input, int mov_x, int mov_y) {
 }
 
 void part_two(char *input) {
-	int result_one = go_downhill(input, 1, 1);
-	int result_two = go_downhill(input, 3, 1);
-	int result_three = go_downhill(input, 5, 1);
-	int result_four = go_downhill(input, 7, 1);
-	int result_five = go_downhill(input, 1, 2);
-	// individual results are right but this gives the wrong answer
-	// need to learn how to do multiplication
-	int product = result_one * result_two * result_three * result_four * result_five;
-	printf("%d = %d * %d * %d * %d * %d\n", product, result_one, result_two, result_three, result_four, result_five);
+	int slopes[5][2] = {
+		{1, 1},
+		{3, 1},
+		{5, 1},
+		{7, 1},
+		{1, 2},
+	};
+	int results[5] = {0};
+	for (int i = 0; i < 5; i++) {
+		results[i] = go_downhill(input, slopes[i][0], slopes[i][1]);
+	}
+
+	unsigned long int product = 0;
+	for (int i = 0; i < 5; i++) {
+		product = product ? product * results[i] : results[i];
+	}
+
+	printf("part2: %lu = %d * %d * %d * %d * %d\n", product, results[0], results[1], results[2], results[3], results[4]);
 }
 
 int main() {
