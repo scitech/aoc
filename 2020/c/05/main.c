@@ -87,6 +87,62 @@ void part_one(char *input) {
   printf("highest seat id: %d\n", highest_seat_id);
 }
 
+void part_two(char *input) {
+	int cursor = 0, lines = 0, i = 0, min = 10000, max = 0;
+  char cur = input[cursor];
+	while (cur != '\0') {
+    if (cur == '\n') {
+      lines++;
+    }
+    cursor++;
+		cur = input[cursor];
+	}
+  int* all_seats = malloc(lines);
+  cursor = 0;
+  cur = input[cursor];
+	while (cur != '\0') {
+    if (cur == 'F' || cur == 'B' || cur == 'L' || cur == 'R') {
+      int seat_id = read_boarding_pass(input, &cursor);
+      if (seat_id < min) {
+        min = seat_id;
+      }
+      if (seat_id > max) {
+        max = seat_id;
+      }
+      all_seats[i] = seat_id;
+      i++;
+    } else {
+      advance(&cursor);
+    }
+		cur = input[cursor];
+	}
+
+  // this seems slow but oh well
+  for (int j = 0; j < lines; j++) {
+    int candidate_seat = all_seats[j];
+    if (candidate_seat != min && candidate_seat != max) {
+      int found_ahead = 0;
+      int found_behind = 0;
+
+      for (int k = 0; k < lines; k++) {
+        if (all_seats[k] == (candidate_seat + 1)) {
+          found_ahead = 1;
+        }
+        if (all_seats[k] == (candidate_seat -1 )) {
+          found_behind = 1;
+        }
+      }
+
+      if (!found_ahead) {
+        printf("missing ahead of %d\n", candidate_seat);
+      }
+      if (!found_behind) {
+        printf("missing behind of %d\n", candidate_seat);
+      }
+    }
+  }
+}
+
 int main() {
 	FILE *fp;
 	fp = fopen("input", "r");
@@ -102,6 +158,7 @@ int main() {
 	fclose(fp);
 
 	part_one(input);
+  part_two(input);
 
 	return 0;
 }
