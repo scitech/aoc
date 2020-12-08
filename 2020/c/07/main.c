@@ -43,8 +43,8 @@ struct Bag {
 void part_one(char* input) {
   struct reader r = new_reader(input);
   while (r.current_ch != 0) {
-    read_next(&r);
     printf("%c", r.current_ch);
+    read_next(&r);
   }
   printf("\n");
 }

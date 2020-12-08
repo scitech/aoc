@@ -9,7 +9,7 @@ main-debug:
 
 
 .PHONY: run
-run: main clean
+run: clean main
 	./main
 
 .PHONY: clean
