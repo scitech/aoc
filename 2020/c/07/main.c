@@ -34,17 +34,40 @@ void read_next(struct reader* r) {
   move_reader_to_offset(r, r->position + 1);
 }
 
+void move_reader_to_next_line(struct reader* r) {
+  while (r->current_ch != '\0') {
+    read_next(r);
+    if (r->current_ch == '\n') {
+      read_next(r);
+      break;
+    }
+  }
+}
 
-struct Bag {
+
+struct bag {
   char* type;
   char* contains;
 };
 
+struct bag bag_from_input(struct reader* r) {
+  char* text_from_current_position = r->text + r->position;
+  char* bag_name_end = strstr(text_from_current_position, " bag");
+  int bag_name_size = bag_name_end - text_from_current_position + 1;
+  struct bag new_bag;
+  char* bag_name = malloc(bag_name_size);
+  strncpy(bag_name, text_from_current_position, bag_name_size - 1);
+  new_bag.type = bag_name;
+  move_reader_to_offset(r, r->position + bag_name_size);
+  return new_bag;
+}
+
 void part_one(char* input) {
   struct reader r = new_reader(input);
   while (r.current_ch != 0) {
-    printf("%c", r.current_ch);
-    read_next(&r);
+    struct bag current_bag = bag_from_input(&r);
+    printf("bag: %s\n", current_bag.type);
+    move_reader_to_next_line(&r);
   }
   printf("\n");
 }
