@@ -102,21 +102,51 @@ intlist read_integer_list(reader* r) {
 	return il;
 }
 
+int validate_integer_list(intlist* ilist, int chunk_size) {
+	int all_valid = 1;
+
+	for (int i = chunk_size; i < ilist->size; i++) {
+		int is_current_number_valid = 0;
+		int number_to_check = *(ilist->numbers + i);
+		int min = i - chunk_size;
+		int max = i;
+		for (int j = min; j < max; j++) {
+			int adder_a = *(ilist->numbers + j);
+			for (int k = min; k < max; k++) {
+				int adder_b = *(ilist->numbers + k);
+				if (adder_a != adder_b) {
+					int sum = adder_a + adder_b;
+					if (number_to_check == sum) {
+						is_current_number_valid = 1;
+						break;
+					}
+				}
+			}
+			if (is_current_number_valid == 1) {
+				break;
+			}
+		}
+
+		if (is_current_number_valid == 0) {
+			all_valid = 0;
+			printf("could not validate %d\n", number_to_check);
+		}
+	}
+
+	return all_valid;
+}
 
 void part_one(intlist* ilist) {
-	for (int i = 0; i < ilist->size; i++) {
-		printf("%d\n", *(ilist->numbers + i));
-	}
+	validate_integer_list(ilist, 25);
 }
 
 void part_two() {
 	printf("TODO\n");
 }
 
-
 int main() {
 	FILE *fp;
-	fp = fopen("input_test", "r");
+	fp = fopen("input", "r");
 	if (fp == NULL) {
 		puts("could not open file");
 		return 1;
