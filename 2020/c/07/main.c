@@ -62,7 +62,6 @@ struct bag_rule {
   int number;
 };
 
-
 struct bag {
   char* type;
   struct bag_rule* rules;
@@ -182,12 +181,9 @@ int can_it_hold_shiny_gold(struct bag b, struct bag_list bl) {
     return it_can_hold;
   }
 
-  printf("%s -> ", b.type);
-
   for (int rule_index = 0; rule_index < b.rules_count; rule_index++) {
     char* contains_type = (b.rules + rule_index)->type;
     if (strcmp(contains_type, "shiny gold") == 0) {
-      printf("shiny gold");
       it_can_hold = 1;
       break;
     } else {
@@ -199,25 +195,50 @@ int can_it_hold_shiny_gold(struct bag b, struct bag_list bl) {
     }
   }
 
-  if (it_can_hold == 0) {
-    printf("END");
+  return it_can_hold;
+}
+
+int how_many_it_hold(struct bag b, struct bag_list bl) {
+  int it_hold = 0;
+  if (b.rules_count == 0) {
+    return it_hold;
   }
 
-  printf("\n");
-  return it_can_hold;
+  for (int rule_index = 0; rule_index < b.rules_count; rule_index++) {
+    char* contains_type = (b.rules + rule_index)->type;
+    struct bag nb = find_bag_in_list(contains_type, bl);
+    it_hold += (b.rules + rule_index)->number + (b.rules + rule_index)->number * how_many_it_hold(nb, bl);
+  }
+  return it_hold;
 }
 
 void count_shiny_golds(struct bag_list bl) {
   int shiny_gold_containable_count = 0;
-
+  int bag_sum = 0;
   for (int i = 0; i < bl.bags_count; i++) {
     struct bag current_bag = *(bl.bags + i);
     int can_hold = can_it_hold_shiny_gold(current_bag, bl);
-
+    for (int j = 0; j < current_bag.rules_count; j++) {
+      int num_bags_in_rule = (current_bag.rules + j)->number;
+      bag_sum += num_bags_in_rule;
+    }
     shiny_gold_containable_count += can_hold;
   }
 
   printf("shiny_gold_containable_count: %d\n", shiny_gold_containable_count);
+}
+
+void count_inside_shiny_gold(struct bag_list bl) {
+  struct bag shiny_gold;
+  for (int i = 0; i < bl.bags_count; i++) {
+    struct bag current_bag = *(bl.bags + i);
+    if (strcmp(current_bag.type, "shiny gold") == 0) {
+      shiny_gold = current_bag;
+    }
+  }
+  int num_it_holds = how_many_it_hold(shiny_gold, bl);
+
+  printf("how_many_it_hold: %d\n", num_it_holds);
 }
 
 void part_one(char* input) {
@@ -235,6 +256,21 @@ void part_one(char* input) {
 
   count_shiny_golds(bl);
 }
+void part_two(char* input) {
+  struct reader r = new_reader(input);
+  struct bag_list bl = init_bag_list();
+  while (r.current_ch != 0) {
+    struct bag current_bag = read_bag_spec(&r);
+    add_bag_to_list(&bl, current_bag);
+  }
+
+  for (int i = 0; i < bl.bags_count; i++) {
+    print_bag(bl.bags + i);
+  }
+  printf("\n");
+
+  count_inside_shiny_gold(bl);
+}
 
 int main() {
 	FILE *fp;
@@ -250,8 +286,22 @@ int main() {
 	}
 	fclose(fp);
 
-	part_one(input);
+  struct reader r = new_reader(input);
+  struct bag_list bl = init_bag_list();
+  while (r.current_ch != 0) {
+    struct bag current_bag = read_bag_spec(&r);
+    add_bag_to_list(&bl, current_bag);
+  }
 
+  for (int i = 0; i < bl.bags_count; i++) {
+    print_bag(bl.bags + i);
+  }
+  printf("\n");
+
+  //part1
+  count_shiny_golds(bl);
+  //part2
+  count_inside_shiny_gold(bl);
 	return 0;
 }
 
@@ -270,4 +320,16 @@ int main() {
 //     "dotted black bags contain no other bags.\n";
 //   part_one(input);
 //   // assert(result == 11);
+// }
+
+
+// int main() {
+//   char* input = "shiny gold bags contain 2 dark red bags.\n"
+//     "dark red bags contain 2 dark orange bags.\n"
+//     "dark orange bags contain 2 dark yellow bags.\n"
+//     "dark yellow bags contain 2 dark green bags.\n"
+//     "dark green bags contain 2 dark blue bags.\n"
+//     "dark blue bags contain 2 dark violet bags.\n"
+//     "dark violet bags contain no other bags.\n";
+//  part_two(input);
 // }
