@@ -27,6 +27,41 @@ reader new_reader(char* text) {
   return r;
 }
 
+typedef struct intset {
+  int* numbers;
+  int size;
+} intset;
+
+intset new_intset() {
+  intset iset;
+  iset.size = 0;
+  return iset;
+}
+
+int intset_has(intset* iset, int val) {
+  int has = 0;
+  for (int i = 0; i < iset->size; i++) {
+    if (*(iset->numbers + i) == val) {
+      has = 1;
+      break;
+    }
+  }
+  return has;
+}
+
+void intset_add(intset* iset, int val) {
+  if (intset_has(iset, val) == 1) return;
+
+  int new_size = iset->size + 1;
+  if (iset->size == 0) {
+    iset->numbers = malloc(new_size * sizeof(int));
+  } else {
+    iset->numbers = realloc(iset->numbers, new_size * sizeof(int));
+  }
+  (iset->numbers)[iset->size] = val;
+  iset->size++;
+}
+
 typedef struct instruction {
   char operation[OP_LENGTH + 1];
   int argument;
@@ -87,7 +122,7 @@ program init_program() {
   return p;
 }
 
-char* read_operation(reader* r, char* op) {
+void read_operation(reader* r, char* op) {
   char* text_from_current_position = r->text + r->position;
   strncpy(op, text_from_current_position, OP_LENGTH);
   move_reader_to_offset(r, r->position + OP_LENGTH + 1);
@@ -143,45 +178,82 @@ instruction read_instruction(reader* r) {
   return in;
 }
 
-int main() {
-	// FILE *fp;
-	// fp = fopen("input", "r");
-	// if (fp == NULL) {
-	// 	puts("could not open file");
-	// 	return 1;
-	// }
-	// char *input = load_input(fp);
-	// if (input == NULL) {
-	// 	puts("could not malloc");
-	// 	return 1;
-	// }
-	// fclose(fp);
+void do_acc(program* p, int arg) {
+  p->accumulator += arg;
+  p->current_instruction_index++;
+}
 
-  char* input = "nop +0\n"
-    "acc +1\n"
-    "jmp +4\n"
-    "acc +3\n"
-    "jmp -3\n"
-    "acc -99\n"
-    "acc +1\n"
-    "jmp -4\n"
-    "acc +6\n";
-  struct reader r = new_reader(input);
-  struct program p = init_program();
+void do_jmp(program* p, int arg) {
+  p->current_instruction_index += arg;
+}
+
+void do_nop(program* p) {
+  p->current_instruction_index++;
+}
+
+void run_program(program* p) {
+  intset lines_we_ran = new_intset();
+  while (p->current_instruction_index < p->instructions_count) {
+    if (intset_has(&lines_we_ran, p->current_instruction_index) == 1) {
+      break;
+    }
+    intset_add(&lines_we_ran, p->current_instruction_index);
+    instruction current_instruction = *(p->instructions + p->current_instruction_index);
+    if (strcmp(current_instruction.operation, "acc") == 0) {
+      do_acc(p, current_instruction.argument);
+    } else if (strcmp(current_instruction.operation, "jmp") == 0) {
+      do_jmp(p, current_instruction.argument);
+    } else if (strcmp(current_instruction.operation, "nop") == 0) {
+      do_nop(p);
+    } else {
+      printf("illegal operation\n");
+      exit(1);
+    }
+  }
+  printf("result: %d\n", p->accumulator);
+}
+
+void part_one(program* p) {
+  for (int i = 0; i < p->instructions_count; i++) {
+    print_instruction(p->instructions + i);
+  }
+
+  run_program(p);
+}
+
+int main() {
+	FILE *fp;
+	fp = fopen("input", "r");
+	if (fp == NULL) {
+		puts("could not open file");
+		return 1;
+	}
+	char *input = load_input(fp);
+	if (input == NULL) {
+		puts("could not malloc");
+		return 1;
+	}
+	fclose(fp);
+
+  // char* input = "nop +0\n"
+  //   "acc +1\n"
+  //   "jmp +4\n"
+  //   "acc +3\n"
+  //   "jmp -3\n"
+  //   "acc -99\n"
+  //   "acc +1\n"
+  //   "jmp -4\n"
+  //   "acc +6\n";
+  reader r = new_reader(input);
+  program p = init_program();
   while (r.current_ch != 0) {
     instruction in = read_instruction(&r);
+    printf("read one %d\n", p.instructions_count);
     add_instruction(&p, in);
   }
 
-  for (int i = 0; i < p.instructions_count; i++) {
-    print_instruction(p.instructions + i);
-  }
+  part_one(&p);
   printf("\n");
 
 	return 0;
 }
-
-// int main() {
-//   // test example from the prompt
-//   part_one(input);
-// }
