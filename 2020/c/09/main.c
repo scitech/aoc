@@ -102,8 +102,22 @@ intlist read_integer_list(reader* r) {
 	return il;
 }
 
-int validate_integer_list(intlist* ilist, int chunk_size) {
-	int all_valid = 1;
+intlist slice_integer_list(intlist* input, int min, int max) {
+	intlist il = new_intlist();
+	for (int i = min; i <= max; i++) {
+		intlist_add(&il, *(input->numbers + i));
+	}
+	return il;
+}
+
+void print_intlist(intlist* ilist) {
+	for (int i = 0; i < ilist->size; i++) {
+		printf("%d\n", *(ilist->numbers + i));
+	}
+}
+
+int find_bad_number(intlist* ilist, int chunk_size) {
+	int bad_number = 0;
 
 	for (int i = chunk_size; i < ilist->size; i++) {
 		int is_current_number_valid = 0;
@@ -128,20 +142,85 @@ int validate_integer_list(intlist* ilist, int chunk_size) {
 		}
 
 		if (is_current_number_valid == 0) {
-			all_valid = 0;
-			printf("could not validate %d\n", number_to_check);
+			bad_number = number_to_check;
 		}
 	}
 
-	return all_valid;
+	return bad_number;
+}
+
+
+void clear_intlist(intlist* ilist) {
+	free(ilist->numbers);
+	ilist->size = 0;
+}
+
+int sum_intlist(intlist* ilist) {
+	int sum = 0;
+	for (int i = 0; i < ilist->size; i++) {
+		sum += *(ilist->numbers + i);
+	}
+	return sum;
+}
+
+int intlist_min(intlist* ilist) {
+	int min = *(ilist->numbers);
+	for (int i = 0; i < ilist->size; i++) {
+		int num = *(ilist->numbers + i);
+		min = min > num ? num : min;
+	}
+	return min;
+}
+int intlist_max(intlist* ilist) {
+	int max = *(ilist->numbers);
+	for (int i = 0; i < ilist->size; i++) {
+		int num = *(ilist->numbers + i);
+		max = max > num ? max : num;
+	}
+	return max;
+}
+
+intlist find_bad_range(intlist* ilist, int bad_number) {
+	intlist il = new_intlist();
+	for (int i = 0; *(ilist->numbers + i) != bad_number; i++) {
+		int val = *(ilist->numbers + i);
+		intlist_add(&il, val);
+		for (int j = i + 1; *(ilist->numbers + j) != bad_number; j++) {
+			int next_val = *(ilist->numbers + j);
+			intlist_add(&il, next_val);
+			int sum = sum_intlist(&il);
+			if (sum > bad_number) {
+				break;
+			}
+
+			if (sum == bad_number) {
+				break;
+			}
+		}
+		if (sum_intlist(&il) == bad_number) {
+			printf("we did it\n");
+			break;
+		} else {
+			clear_intlist(&il);
+		}
+	}
+	return il;
 }
 
 void part_one(intlist* ilist) {
-	validate_integer_list(ilist, 25);
+	int bad_number = find_bad_number(ilist, 25);
+	printf("bad number: %d\n", bad_number);
 }
 
-void part_two() {
-	printf("TODO\n");
+void part_two(intlist* ilist) {
+	int bad_number = find_bad_number(ilist, 25);
+	printf("bad number: %d\n", bad_number);
+	intlist bad_range = find_bad_range(ilist, bad_number);
+	print_intlist(&bad_range);
+	int min = intlist_min(&bad_range);
+	int max = intlist_max(&bad_range);
+	printf("really we did it, min: %d, max: %d\n", min, max);
+	printf("encryption weakness: %d\n", min + max);
 }
 
 int main() {
@@ -160,11 +239,11 @@ int main() {
 
 	reader r = new_reader(input);
 	intlist il = read_integer_list(&r);
-	printf("part1:\n");
-	part_one(&il);
+	// printf("part1:\n");
+	// part_one(&il);
 
 	printf("\npart2:\n");
-	part_two();
+	part_two(&il);
 	printf("\n");
 
 	return 0;
