@@ -89,7 +89,7 @@ char* read_bag_type(struct reader* r) {
   char* text_from_current_position = r->text + r->position;
   char* bag_name_end = strstr(text_from_current_position, " bag");
   int bag_name_size = bag_name_end - text_from_current_position + 1;
-  char* bag_name = malloc(bag_name_size);
+  char* bag_name = calloc(bag_name_size + 1, sizeof(char));
   strncpy(bag_name, text_from_current_position, bag_name_size - 1);
   move_reader_to_offset(r, r->position + bag_name_size);
   return bag_name;
@@ -166,6 +166,60 @@ void add_bag_to_list(struct bag_list* bl, struct bag b) {
   bl->bags_count++;
 }
 
+struct bag find_bag_in_list(char* type, struct bag_list bl) {
+  struct bag b;
+  for (int i = 0; i < bl.bags_count; i++) {
+    if (strcmp(type, (bl.bags + i)->type) == 0) {
+      b = *(bl.bags + i);
+    }
+  }
+  return b;
+}
+
+int can_it_hold_shiny_gold(struct bag b, struct bag_list bl) {
+  int it_can_hold = 0;
+  if (b.rules_count == 0) {
+    return it_can_hold;
+  }
+
+  printf("%s -> ", b.type);
+
+  for (int rule_index = 0; rule_index < b.rules_count; rule_index++) {
+    char* contains_type = (b.rules + rule_index)->type;
+    if (strcmp(contains_type, "shiny gold") == 0) {
+      printf("shiny gold");
+      it_can_hold = 1;
+      break;
+    } else {
+      struct bag nb = find_bag_in_list(contains_type, bl);
+      it_can_hold = can_it_hold_shiny_gold(nb, bl);
+      if (it_can_hold == 1) {
+        break;
+      }
+    }
+  }
+
+  if (it_can_hold == 0) {
+    printf("END");
+  }
+
+  printf("\n");
+  return it_can_hold;
+}
+
+void count_shiny_golds(struct bag_list bl) {
+  int shiny_gold_containable_count = 0;
+
+  for (int i = 0; i < bl.bags_count; i++) {
+    struct bag current_bag = *(bl.bags + i);
+    int can_hold = can_it_hold_shiny_gold(current_bag, bl);
+
+    shiny_gold_containable_count += can_hold;
+  }
+
+  printf("shiny_gold_containable_count: %d\n", shiny_gold_containable_count);
+}
+
 void part_one(char* input) {
   struct reader r = new_reader(input);
   struct bag_list bl = init_bag_list();
@@ -178,38 +232,42 @@ void part_one(char* input) {
     print_bag(bl.bags + i);
   }
   printf("\n");
+
+  count_shiny_golds(bl);
+}
+
+int main() {
+	FILE *fp;
+	fp = fopen("input", "r");
+	if (fp == NULL) {
+		puts("could not open file");
+		return 1;
+	}
+	char *input = load_input(fp);
+	if (input == NULL) {
+		puts("could not malloc");
+		return 1;
+	}
+	fclose(fp);
+
+	part_one(input);
+
+	return 0;
 }
 
 // int main() {
-// 	FILE *fp;
-// 	fp = fopen("input", "r");
-// 	if (fp == NULL) {
-// 		puts("could not open file");
-// 		return 1;
-// 	}
-// 	char *input = load_input(fp);
-// 	if (input == NULL) {
-// 		puts("could not malloc");
-// 		return 1;
-// 	}
-// 	fclose(fp);
-
-// 	part_one(input);
-
-// 	return 0;
+//   // test example from the prompt
+//   char* input = "light red bags contain 1 bright white bag, 2 muted yellow bags.\n"
+//     "dark orange bags contain 3 bright white bags, 4 muted yellow bags.\n"
+//     "bright white bags contain 1 shiny gold bag.\n"
+//     "muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.\n"
+//     "shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.\n"
+//     "dark olive bags contain 3 faded blue bags, 4 dotted black bags.\n"
+//     "vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.\n"
+//     "faded blue bags contain no other bags.\n"
+//     "striped fuchsia bags contain 3 dim cyan bags.\n"
+//     "dim cyan bags contain no other bags.\n"
+//     "dotted black bags contain no other bags.\n";
+//   part_one(input);
+//   // assert(result == 11);
 // }
-
-int main() {
-  // test example from the prompt
-  char* input = "light red bags contain 1 bright white bag, 2 muted yellow bags.\n"
-    "dark orange bags contain 3 bright white bags, 4 muted yellow bags.\n"
-    "bright white bags contain 1 shiny gold bag.\n"
-    "muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.\n"
-    "shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.\n"
-    "dark olive bags contain 3 faded blue bags, 4 dotted black bags.\n"
-    "vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.\n"
-    "faded blue bags contain no other bags.\n"
-    "dotted black bags contain no other bags.\n";
-  part_one(input);
-  // assert(result == 11);
-}
