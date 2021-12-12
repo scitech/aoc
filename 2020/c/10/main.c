@@ -145,11 +145,6 @@ int intlist_max(intlist* ilist) {
 }
 
 void part_one(intlist* ilist) {
-	intlist_add(ilist, 0);
-	int built_in_adapter = intlist_max(ilist) + 3;
-	intlist_add(ilist, built_in_adapter);
-	qsort(ilist->numbers, ilist->size, sizeof(int), compare_ints);
-
 	int ones = 0;
 	int twos = 0;
 	int threes = 0;
@@ -175,6 +170,18 @@ void part_one(intlist* ilist) {
 	printf("ones: %d, twos: %d, threes: %d\n", ones, twos, threes);
 }
 
+void part_two(intlist* ilist) {
+	intlist paths_list = new_intlist();
+	intlist_add(&paths_list, 1);
+	for (int i = 1; i < ilist->size; i++) {
+		int adapter = *(ilist->numbers + i);
+		for (int j = 1; j < 4; j++) {
+			
+		}
+	}
+	print_intlist(&paths_list);
+	printf("max: %d\n", intlist_max(&paths_list));
+}
 
 int main() {
 	FILE *fp;
@@ -192,11 +199,15 @@ int main() {
 
 	reader r = new_reader(input);
 	intlist il = read_integer_list(&r);
+	intlist_add(&il, 0);
+	int built_in_adapter = intlist_max(&il) + 3;
+	intlist_add(&il, built_in_adapter);
+	qsort(il.numbers, il.size, sizeof(int), compare_ints);
 	printf("part1:\n");
 	part_one(&il);
 
-	// printf("\npart2:\n");
-	// part_two(&il);
+	printf("\npart2:\n");
+	part_two(&il);
 	printf("\n");
 
 	return 0;
