@@ -1,5 +1,47 @@
+#[derive(Debug)]
+struct Coord {
+    x: u16,
+    y: u16
+}
+
+impl Coord {
+    fn parse(raw_coord: &str) -> Result<Coord, String> {
+        let mut pos = raw_coord.split(",");
+        let x: u16 = match pos.next() {
+            Some(raw_pos) => raw_pos.parse().or(Err(format!("cant parse number for x, got {}", raw_pos))),
+            None => Err(String::from("line parsing error: missing x coord"))
+        }?;
+        let y: u16 = match pos.next() {
+            Some(raw_pos) => raw_pos.parse().or(Err(format!("cant parse number for y, got {}", raw_pos))),
+            None => Err(String::from("line parsing error: missing y coord"))
+        }?;
+        Ok(Coord{x: x, y: y})
+    }
+}
+#[derive(Debug)]
+struct Line {
+    start: Coord,
+    end: Coord
+}
+
+impl Line {
+    fn parse(raw_line: &str) -> Result<Line, String> {
+        let mut coords = raw_line.split(" -> ");
+        let start = match coords.next() {
+            Some(raw_coord) => Coord::parse(raw_coord),
+            None => Err(String::from("line parsing error: missing first coord"))
+        }?;
+        let end = match coords.next() {
+            Some(raw_coord) => Coord::parse(raw_coord),
+            None => Err(String::from("line parsing error: missing second coord"))
+        }?;
+        Ok(Line{ start: start, end: end })
+    }
+}
+
 pub fn part_one(input: &String) -> usize {
-    println!("{}", input);
+    let parsed_lines: Vec<Line> = input.lines().map(|raw_line| Line::parse(raw_line).unwrap()).collect();
+    println!("{:?}", parsed_lines);
     0
 }
 
