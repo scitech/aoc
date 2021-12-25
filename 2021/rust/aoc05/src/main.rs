@@ -95,6 +95,40 @@ impl OceanFloor {
             }
         }
     }
+    fn plot_with_diags(&mut self, lines: &Vec<Line>) {
+        for line in lines {
+
+            if line.start.y == line.end.y {
+                for x in std::cmp::min(line.start.x, line.end.x)..=std::cmp::max(line.start.x, line.end.x) {
+                    let row = &mut self.grid[line.start.y as usize];
+                    row[x as usize] += 1;
+                }
+            } else if line.start.x == line.end.x {
+                for y in std::cmp::min(line.start.y, line.end.y)..=std::cmp::max(line.start.y, line.end.y) {
+                    let row = &mut self.grid[y as usize];
+                    row[line.start.x as usize] += 1;
+                }
+            } else if (line.end.x as isize - line.start.x as isize).abs() == (line.end.y as isize - line.start.y as isize).abs() {
+                let mut cursor = Coord{ x: line.start.x, y: line.start.y};
+                while cursor.x != line.end.x {
+                    let row = &mut self.grid[cursor.y as usize];
+                    row[cursor.x as usize] += 1;
+                    if cursor.x < line.end.x {
+                        cursor.x += 1;
+                    } else {
+                        cursor.x -= 1;
+                    }
+                    if cursor.y < line.end.y {
+                        cursor.y += 1;
+                    } else {
+                        cursor.y -= 1;
+                    }
+                }
+                let row = &mut self.grid[cursor.y as usize];
+                row[cursor.x as usize] += 1;
+            }
+        }
+    }
 
     fn overlapping_lines_count(&self) -> usize {
         let mut count = 0;
@@ -115,11 +149,20 @@ pub fn part_one(input: &String) -> usize {
     ocean.plot(&parsed_lines);
     ocean.overlapping_lines_count()
 }
+pub fn part_two(input: &String) -> usize {
+    let parsed_lines: Vec<Line> = input.lines().map(|raw_line| Line::parse(raw_line).unwrap()).collect();
+    let mut ocean = OceanFloor::new(&parsed_lines).unwrap();
+    ocean.plot_with_diags(&parsed_lines);
+    ocean.overlapping_lines_count()
+}
 
 fn main() {
     let contents = std::fs::read_to_string("input").unwrap();
     let result = part_one(&contents);
     println!("part 1");
+    println!("{:?}", result);
+    let result = part_two(&contents);
+    println!("part 2");
     println!("{:?}", result);
 }
 
@@ -142,8 +185,18 @@ mod tests {
 5,5 -> 8,2");
         assert_eq!(part_one(&example), 5);
     }
-    // #[test]
-    // fn it_works_v2() {
-    //     assert_eq!(part_two(&example), 1924);
-    // }
+    #[test]
+    fn it_works_v2() {
+        let example = String::from("0,9 -> 5,9
+8,0 -> 0,8
+9,4 -> 3,4
+2,2 -> 2,1
+7,0 -> 7,4
+6,4 -> 2,0
+0,9 -> 2,9
+3,4 -> 1,4
+0,0 -> 8,8
+5,5 -> 8,2");
+        assert_eq!(part_two(&example), 12);
+    }
 }
