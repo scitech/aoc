@@ -39,10 +39,81 @@ impl Line {
     }
 }
 
+// rows
+// [
+//     [ 0 , 0, 0, ],
+//     [ 0 , 0, 0, ],
+// ]
+// #[derive(Debug)]
+struct OceanFloor {
+    grid: Vec<Vec<usize>>
+}
+impl std::fmt::Display for OceanFloor {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        for row in &self.grid {
+            write!(f, "{:?}\n", row)?;
+        }
+        Ok(())
+    }
+}
+impl OceanFloor {
+    fn new(lines: &Vec<Line>) -> Result<OceanFloor, String> {
+        let line_with_max_x = lines.iter()
+            .max_by_key(|line| std::cmp::max(line.start.x, line.end.x));
+        let max_x = match line_with_max_x {
+            Some(line) => Ok(std::cmp::max(line.start.x, line.end.x)),
+            None => Err(String::from("no max x item"))
+        }?;
+        let line_with_max_y = lines.iter()
+            .max_by_key(|line| std::cmp::max(line.start.y, line.end.y));
+        let max_y = match line_with_max_y {
+            Some(line) => Ok(std::cmp::max(line.start.y, line.end.y)),
+            None => Err(String::from("no max y item"))
+        }?;
+
+        
+        Ok(OceanFloor{grid: vec![vec![0; max_x as usize + 1]; max_y as usize + 1]})
+    }
+
+    fn plot(&mut self, lines: &Vec<Line>) {
+        for line in lines {
+            let y1 = std::cmp::min(line.start.y, line.end.y);
+            let x1 = std::cmp::min(line.start.x, line.end.x);
+            let y2 = std::cmp::max(line.start.y, line.end.y);
+            let x2 = std::cmp::max(line.start.x, line.end.x);
+
+            if y1 == y2 {
+                for x in x1..=x2 {
+                    let row: &mut Vec<usize> = &mut self.grid[y1 as usize];
+                    row[x as usize] += 1;
+                }
+            } else if x1 == x2 {
+                for y in y1..=y2 {
+                    let row: &mut Vec<usize> = &mut self.grid[y as usize];
+                    row[x1 as usize] += 1;
+                }
+            }
+        }
+    }
+
+    fn overlapping_lines_count(&self) -> usize {
+        let mut count = 0;
+        for row in &self.grid {
+            for &cell in row {
+                if cell > 1 {
+                    count += 1;
+                }
+            }
+        }
+        return count;
+    }
+}
+
 pub fn part_one(input: &String) -> usize {
     let parsed_lines: Vec<Line> = input.lines().map(|raw_line| Line::parse(raw_line).unwrap()).collect();
-    println!("{:?}", parsed_lines);
-    0
+    let mut ocean = OceanFloor::new(&parsed_lines).unwrap();
+    ocean.plot(&parsed_lines);
+    ocean.overlapping_lines_count()
 }
 
 fn main() {
