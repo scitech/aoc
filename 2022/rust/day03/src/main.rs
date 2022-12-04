@@ -1,13 +1,13 @@
-fn same_char_finder(a: &String, b: &String) -> Result<char, String> {
-	a.chars()
-		.find(|a_ch| b.chars().find(|b_ch| a_ch == b_ch).is_some())
-		.ok_or(String::from("could not find same char in both strings"))
-}
-
-fn same_char_finder_2(a: &String, b: &String, c: &String) -> Result<char, String> {
-	a.chars()
+fn has_common_char(strs: &[&str]) -> Result<char, String> {
+	let [ first, rest @ .. ] = strs else {
+		return Err(String::from("bad params"));
+	};
+	first
+		.chars()
 		.find(|a_ch| {
-			b.chars().find(|b_ch| a_ch == b_ch).is_some() && c.chars().find(|c_ch| a_ch == c_ch).is_some()
+			rest.iter().fold(true, |all_have_match, next_str| {
+				return all_have_match && next_str.chars().find(|b_ch| a_ch == b_ch).is_some()
+			})
 		})
 		.ok_or(String::from("could not find same char in all strings"))
 }
@@ -23,10 +23,10 @@ fn get_priority(ch: char) -> usize {
 pub fn part_one(input: &String) -> usize {
 	input.lines()
 		.map(|raw_line| get_priority(
-			same_char_finder(
+			has_common_char(&[
 				&String::from(&raw_line[0..(raw_line.len() / 2)]),
 				&String::from(&raw_line[(raw_line.len() / 2)..raw_line.len()]),
-			).unwrap()
+			]).unwrap()
 		))
 		.sum()
 }
@@ -37,10 +37,10 @@ pub fn part_two(input: &String) -> usize {
 		.collect::<Vec<&str>>() 
 		.chunks(3)
 		.map(|chunk| get_priority(
-			same_char_finder_2(
+			has_common_char(&[
 				&String::from(chunk[0]), 
 				&String::from(chunk[1]), 
-				&String::from(chunk[2])).unwrap()
+				&String::from(chunk[2])]).unwrap()
 			)
 		)
 		.sum()
