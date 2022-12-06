@@ -1,42 +1,38 @@
 use std::collections::HashSet;
 
-pub fn part_one(input: &String) -> usize {
+fn first_unique_chunk_index(input: &String, chunk_size: usize) -> usize {
     let mut window: HashSet<char> = HashSet::new();
     let mut result = 0;
-    for (idx, _ch) in input.chars().enumerate() {
-        if idx < 4 {
-            continue;
-        } else {
-            let prev_four = &input[(idx-4)..idx];
+    let (result, _) = input
+        .chars()
+        .enumerate()
+        .find(|(idx, _ch)| {
+            let index = *idx;
+            if index < chunk_size {
+                return false;
+            }
+
+            let prev_four = &input[(index - chunk_size)..index];
             window.extend(prev_four.chars());
-            if window.len() == 4 {
-                result = idx;
+            if window.len() == chunk_size {
+                result = index;
                 window.clear();
-                break;
+                return true;
             }
             window.clear();
-        }
-    }
+            return false;
+        })
+        .unwrap();
+
     result
 }
+
+pub fn part_one(input: &String) -> usize {
+    first_unique_chunk_index(input, 4)
+}
+
 pub fn part_two(input: &String) -> usize {
-    let mut window: HashSet<char> = HashSet::new();
-    let mut result = 0;
-    for (idx, _ch) in input.chars().enumerate() {
-        if idx < 14 {
-            continue;
-        } else {
-            let prev_four = &input[(idx-14)..idx];
-            window.extend(prev_four.chars());
-            if window.len() == 14 {
-                result = idx;
-                window.clear();
-                break;
-            }
-            window.clear();
-        }
-    }
-    result
+    first_unique_chunk_index(input, 14)
 }
 
 fn main() {
