@@ -29,16 +29,20 @@ fn read_dir_stats(input: &String) -> Vec<(String, usize)> {
             if dir_info.is_none() {
                 dirs.push((resolved, 0));
             }
-        } else /* a file */ {
+        } else
+        /* a file */
+        {
             let parts: Vec<&str> = line.split(" ").collect();
             let size = parts[0].parse::<usize>().unwrap();
-            dirs = dirs.iter().map(|dir_stats| {
-
-                if cwd.join("/").contains(&dir_stats.0) {
-                    return (dir_stats.0.clone(), dir_stats.1 + size);
-                }
-                (dir_stats.0.clone(), dir_stats.1)
-            }).collect();
+            dirs = dirs
+                .iter()
+                .map(|dir_stats| {
+                    if cwd.join("/").contains(&dir_stats.0) {
+                        return (dir_stats.0.clone(), dir_stats.1 + size);
+                    }
+                    (dir_stats.0.clone(), dir_stats.1)
+                })
+                .collect();
         }
     }
     dirs
@@ -49,7 +53,7 @@ pub fn part_one(input: &String) -> usize {
     let result = dirs.iter().fold(0, |total, dir_info| {
         let amount = dir_info.1;
         if amount <= 100000 {
-            return total + amount
+            return total + amount;
         }
         total
     });
@@ -62,14 +66,17 @@ pub fn part_two(input: &String) -> usize {
     let min = target - free;
     let amounts: Vec<usize> = dirs.iter().map(|d| d.1).collect();
 
-    *amounts.iter().reduce(|smallest, current| {
-        if current > &min {
-            if current < smallest {
-                return current
+    *amounts
+        .iter()
+        .reduce(|smallest, current| {
+            if current > &min {
+                if current < smallest {
+                    return current;
+                }
             }
-        }
-        smallest
-    }).unwrap()
+            smallest
+        })
+        .unwrap()
 }
 
 fn main() {
@@ -87,7 +94,8 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let example = String::from("$ cd /
+        let example = String::from(
+            "$ cd /
 $ ls
 dir a
 14848514 b.txt
@@ -109,12 +117,14 @@ $ ls
 4060174 j
 8033020 d.log
 5626152 d.ext
-7214296 k");
+7214296 k",
+        );
         assert_eq!(part_one(&example), 95437);
     }
     #[test]
     fn it_works_v2() {
-        let example = String::from("$ cd /
+        let example = String::from(
+            "$ cd /
 $ ls
 dir a
 14848514 b.txt
@@ -136,7 +146,8 @@ $ ls
 4060174 j
 8033020 d.log
 5626152 d.ext
-7214296 k");
+7214296 k",
+        );
         assert_eq!(part_two(&example), 24933642);
     }
 }
