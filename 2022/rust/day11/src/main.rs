@@ -14,26 +14,25 @@ type MonkeyMap = HashMap<usize, Monkey>;
 
 impl Monkey {
     fn parse(monkey_block: &str) -> Result<Monkey, String> {
-        let lines = monkey_block.split("\n");
-        let starting_line = lines.clone().skip(1).next().unwrap();
+        let lines: Vec<&str> = monkey_block.split("\n").collect();
+        let starting_line = lines[1];
         let starting_items = starting_line.split(": ").skip(1).next().unwrap()
             .split(", ").map(|number| number.parse::<isize>().unwrap() ).collect();
 
-        let operation_line = lines.clone().skip(2).next().unwrap();
+        let operation_line = lines[2];
         let mut operation_parts = operation_line.split(": new = old ").skip(1).next().unwrap()
             .split(" ");
         let operator = String::from(operation_parts.next().unwrap());
         let operand = String::from(operation_parts.next().unwrap());
 
-        let test_divisor = lines.clone().skip(3).next().unwrap()
+        let test_divisor = lines[3]
             .split("divisible by ").skip(1).next().unwrap()
             .parse::<isize>().unwrap();
-        let test_ok_monkey_a = lines.clone().skip(4).next().unwrap()
+        let test_ok_monkey_a = lines[4]
             .split("throw to monkey ").skip(1).next();
-        println!("{:}", test_ok_monkey_a.unwrap());
         let test_ok_monkey = test_ok_monkey_a.unwrap()
             .parse::<usize>().unwrap();
-        let test_fail_monkey = lines.clone().skip(5).next().unwrap()
+        let test_fail_monkey = lines[5]
             .split("throw to monkey ").skip(1).next().unwrap()
             .parse::<usize>().unwrap();
 
