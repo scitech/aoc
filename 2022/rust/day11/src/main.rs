@@ -17,41 +17,57 @@ impl Monkey {
     fn parse(monkey_block: &str) -> Result<Monkey, String> {
         let lines: Vec<&str> = monkey_block.split("\n").collect();
         let starting_line = lines[1];
-        let starting_items = starting_line.split(": ").skip(1).next().unwrap()
-            .split(", ").map(|number| number.parse::<isize>().unwrap() ).collect();
+        let starting_items = starting_line
+            .split(": ")
+            .skip(1)
+            .next()
+            .unwrap()
+            .split(", ")
+            .map(|number| number.parse::<isize>().unwrap())
+            .collect();
 
         let operation_line = lines[2];
-        let mut operation_parts = operation_line.split(": new = old ").skip(1).next().unwrap()
+        let mut operation_parts = operation_line
+            .split(": new = old ")
+            .skip(1)
+            .next()
+            .unwrap()
             .split(" ");
         let operator = String::from(operation_parts.next().unwrap());
         let operand = String::from(operation_parts.next().unwrap());
 
         let test_divisor = lines[3]
-            .split("divisible by ").skip(1).next().unwrap()
-            .parse::<isize>().unwrap();
-        let test_ok_monkey_a = lines[4]
-            .split("throw to monkey ").skip(1).next();
-        let test_ok_monkey = test_ok_monkey_a.unwrap()
-            .parse::<usize>().unwrap();
+            .split("divisible by ")
+            .skip(1)
+            .next()
+            .unwrap()
+            .parse::<isize>()
+            .unwrap();
+        let test_ok_monkey_a = lines[4].split("throw to monkey ").skip(1).next();
+        let test_ok_monkey = test_ok_monkey_a.unwrap().parse::<usize>().unwrap();
         let test_fail_monkey = lines[5]
-            .split("throw to monkey ").skip(1).next().unwrap()
-            .parse::<usize>().unwrap();
+            .split("throw to monkey ")
+            .skip(1)
+            .next()
+            .unwrap()
+            .parse::<usize>()
+            .unwrap();
 
-        return Ok(Monkey{
+        return Ok(Monkey {
             count: 0,
             items: starting_items,
             operator,
             operand,
             test_divisor,
             test_ok_monkey,
-            test_fail_monkey
+            test_fail_monkey,
         });
     }
 
     fn map_op(&self, old: isize) -> isize {
         let parsed_operand = match self.operand.as_str() {
             "old" => old,
-            anything_else => anything_else.parse::<isize>().unwrap()
+            anything_else => anything_else.parse::<isize>().unwrap(),
         };
         match self.operator.as_str() {
             "+" => old + parsed_operand,
@@ -65,9 +81,11 @@ fn process_monkeys(mmap: &mut MonkeyMap) -> () {
     (0..mmap.len()).for_each(|idx| {
         let monkey = mmap.get(&idx).unwrap();
         let new_count = monkey.items.len();
-        let worried_items: Vec<isize> = monkey.items.iter().map(|item| {
-            monkey.map_op(*item) / 3
-        }).collect();
+        let worried_items: Vec<isize> = monkey
+            .items
+            .iter()
+            .map(|item| monkey.map_op(*item) / 3)
+            .collect();
         let mut new_fail_items = vec![];
         let mut ok_items = vec![];
         worried_items.iter().for_each(|item| {
@@ -84,42 +102,57 @@ fn process_monkeys(mmap: &mut MonkeyMap) -> () {
         let mut ok_monkey_items = ok_monkey.items.clone();
         ok_monkey_items.append(&mut ok_items);
 
-        mmap.extend([monkey.test_fail_monkey, monkey.test_ok_monkey, idx].map(|i| {
-            if i == monkey.test_fail_monkey {
-                (i, Monkey {
-                    items: fail_monkey_items.clone(),
-                    operand: fail_monkey.operand.clone(),
-                    operator: fail_monkey.operator.clone(),
-                    ..*fail_monkey
-                })
-            } else if i == monkey.test_ok_monkey {
-                (i, Monkey {
-                    items: ok_monkey_items.clone(),
-                    operand: ok_monkey.operand.clone(),
-                    operator: ok_monkey.operator.clone(),
-                    ..*ok_monkey
-                })
-            } else {
-                (i, Monkey {
-                    items: vec![],
-                    operand: monkey.operand.clone(),
-                    operator: monkey.operator.clone(),
-                    count: monkey.count + new_count,
-                    ..*monkey
-                })
-            }
-        }));
+        mmap.extend(
+            [monkey.test_fail_monkey, monkey.test_ok_monkey, idx].map(|i| {
+                if i == monkey.test_fail_monkey {
+                    (
+                        i,
+                        Monkey {
+                            items: fail_monkey_items.clone(),
+                            operand: fail_monkey.operand.clone(),
+                            operator: fail_monkey.operator.clone(),
+                            ..*fail_monkey
+                        },
+                    )
+                } else if i == monkey.test_ok_monkey {
+                    (
+                        i,
+                        Monkey {
+                            items: ok_monkey_items.clone(),
+                            operand: ok_monkey.operand.clone(),
+                            operator: ok_monkey.operator.clone(),
+                            ..*ok_monkey
+                        },
+                    )
+                } else {
+                    (
+                        i,
+                        Monkey {
+                            items: vec![],
+                            operand: monkey.operand.clone(),
+                            operator: monkey.operator.clone(),
+                            count: monkey.count + new_count,
+                            ..*monkey
+                        },
+                    )
+                }
+            }),
+        );
     })
 }
 
 fn process_monkeys_2(mmap: &mut MonkeyMap) -> () {
-    let big_mod = mmap.iter().fold(1, |acc, (_, monk)| { acc * monk.test_divisor});
+    let big_mod = mmap
+        .iter()
+        .fold(1, |acc, (_, monk)| acc * monk.test_divisor);
     (0..mmap.len()).for_each(|idx| {
         let monkey = mmap.get(&idx).unwrap();
         let new_count = monkey.items.len();
-        let worried_items: Vec<isize> = monkey.items.iter().map(|item| {
-            monkey.map_op(*item) % big_mod
-        }).collect();
+        let worried_items: Vec<isize> = monkey
+            .items
+            .iter()
+            .map(|item| monkey.map_op(*item) % big_mod)
+            .collect();
         let mut new_fail_items = vec![];
         let mut ok_items = vec![];
         worried_items.iter().for_each(|item| {
@@ -136,31 +169,42 @@ fn process_monkeys_2(mmap: &mut MonkeyMap) -> () {
         let mut ok_monkey_items = ok_monkey.items.clone();
         ok_monkey_items.append(&mut ok_items);
 
-        mmap.extend([monkey.test_fail_monkey, monkey.test_ok_monkey, idx].map(|i| {
-            if i == monkey.test_fail_monkey {
-                (i, Monkey {
-                    items: fail_monkey_items.clone(),
-                    operand: fail_monkey.operand.clone(),
-                    operator: fail_monkey.operator.clone(),
-                    ..*fail_monkey
-                })
-            } else if i == monkey.test_ok_monkey {
-                (i, Monkey {
-                    items: ok_monkey_items.clone(),
-                    operand: ok_monkey.operand.clone(),
-                    operator: ok_monkey.operator.clone(),
-                    ..*ok_monkey
-                })
-            } else {
-                (i, Monkey {
-                    items: vec![],
-                    operand: monkey.operand.clone(),
-                    operator: monkey.operator.clone(),
-                    count: monkey.count + new_count,
-                    ..*monkey
-                })
-            }
-        }));
+        mmap.extend(
+            [monkey.test_fail_monkey, monkey.test_ok_monkey, idx].map(|i| {
+                if i == monkey.test_fail_monkey {
+                    (
+                        i,
+                        Monkey {
+                            items: fail_monkey_items.clone(),
+                            operand: fail_monkey.operand.clone(),
+                            operator: fail_monkey.operator.clone(),
+                            ..*fail_monkey
+                        },
+                    )
+                } else if i == monkey.test_ok_monkey {
+                    (
+                        i,
+                        Monkey {
+                            items: ok_monkey_items.clone(),
+                            operand: ok_monkey.operand.clone(),
+                            operator: ok_monkey.operator.clone(),
+                            ..*ok_monkey
+                        },
+                    )
+                } else {
+                    (
+                        i,
+                        Monkey {
+                            items: vec![],
+                            operand: monkey.operand.clone(),
+                            operator: monkey.operator.clone(),
+                            count: monkey.count + new_count,
+                            ..*monkey
+                        },
+                    )
+                }
+            }),
+        );
     })
 }
 
@@ -173,11 +217,9 @@ pub fn part_one(input: &String) -> usize {
     (0..20).for_each(|_round| {
         process_monkeys(&mut monkey_map);
     });
-    let mut counts: Vec<usize> = monkey_map.iter().map(|(_, monkey)| {
-        monkey.count
-    }).collect();
+    let mut counts: Vec<usize> = monkey_map.iter().map(|(_, monkey)| monkey.count).collect();
     counts.sort();
-    
+
     println!("{:?}", counts);
     counts[counts.len() - 2] * counts[counts.len() - 1]
 }
@@ -190,11 +232,9 @@ pub fn part_two(input: &String) -> usize {
     (0..10000).for_each(|_round| {
         process_monkeys_2(&mut monkey_map);
     });
-    let mut counts: Vec<usize> = monkey_map.iter().map(|(_, monkey)| {
-        monkey.count
-    }).collect();
+    let mut counts: Vec<usize> = monkey_map.iter().map(|(_, monkey)| monkey.count).collect();
     counts.sort();
-    
+
     println!("{:?}", counts);
     counts[counts.len() - 2] * counts[counts.len() - 1]
 }
