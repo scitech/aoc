@@ -5,12 +5,10 @@ fn parse_stacks(input: &str) -> Vec<Vec<char>> {
     let mut stacks = vec![vec![]; num_stacks];
 
     lines.rev().for_each(|line| {
-        line.chars().enumerate().for_each(|(ch_idx, ch)| {
-            if ch_idx > 0 {
-                let stack_index = (ch_idx - 1) / 4;
-                if ch.is_alphabetic() {
-                    stacks[stack_index].push(ch);
-                }
+        line.chars().enumerate().skip(1).chunks(4).for_each(|(chunk_idx, chunk)| {
+            let ch = chunk[0];
+            if ch.is_alphabetic() {
+                stacks[chunk_idx].push(ch);
             }
         });
     });
